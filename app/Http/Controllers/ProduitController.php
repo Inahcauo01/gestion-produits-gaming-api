@@ -8,6 +8,11 @@ use App\Http\Requests\UpdateProduitRequest;
 
 class ProduitController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -15,28 +20,29 @@ class ProduitController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $produits = Produit::orderBy('id')->get();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'status' => 'success',
+            'produits' => $produits
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StoreProduitRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(StoreProduitRequest $request)
     {
-        //
+        $produit = Produit::create($request->all());
+
+        return response()->json([
+            'status' => true,
+            'message' => "Produit Created successfully!",
+            'produit' => $produit
+        ], 201);
     }
 
     /**
@@ -47,31 +53,35 @@ class ProduitController extends Controller
      */
     public function show(Produit $produit)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Produit  $produit
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Produit $produit)
-    {
-        //
+        $produit->find($produit->id);
+        if (!$produit) {
+            return response()->json(['message' => 'Produit not found'], 404);
+        }
+        return response()->json($produit, 200);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateProduitRequest  $request
+     * @param  \Illuminate\Http\Request  $request
      * @param  \App\Models\Produit  $produit
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateProduitRequest $request, Produit $produit)
+    public function update(StoreProduitRequest $request, Produit $produit)
     {
-        //
+        $produit->update($request->all());
+
+        if (!$produit) {
+            return response()->json(['message' => 'Produit not found'], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "Produit Updated successfully!",
+            'produit' => $produit
+        ], 200);
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -81,6 +91,17 @@ class ProduitController extends Controller
      */
     public function destroy(Produit $produit)
     {
-        //
+        $produit->delete();
+
+        if (!$produit) {
+            return response()->json([
+                'message' => 'Produit not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Produit deleted successfully'
+        ], 200);
     }
 }
